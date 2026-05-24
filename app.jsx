@@ -14,6 +14,20 @@ function App() {
     return () => clearTimeout(t);
   });
 
+  // On load with hash (e.g. coming back from cos.html with #meniu), scroll there
+  React.useEffect(() => {
+    const hash = window.location.hash.replace("#", "");
+    if (hash) {
+      setTimeout(() => {
+        const el = document.getElementById(hash);
+        if (el) {
+          const y = el.getBoundingClientRect().top + window.pageYOffset - 56;
+          window.scrollTo({ top: y, behavior: "instant" in window ? "instant" : "auto" });
+        }
+      }, 50);
+    }
+  }, []);
+
   const scrollTo = (id) => {
     if (id === "top") {
       window.scrollTo({ top: 0, behavior: "smooth" });
@@ -26,14 +40,23 @@ function App() {
     }
   };
 
+  // Cart is its own page now
+  const onNav = (id) => {
+    if (id === "cos") {
+      window.location.href = "cos.html";
+      return;
+    }
+    scrollTo(id);
+  };
+
   return (
     <React.Fragment>
       <Nav
         theme={theme}
         toggleTheme={toggleTheme}
         cartCount={cart.count}
-        onCart={() => scrollTo("comanda")}
-        onNav={scrollTo}
+        onCart={() => { window.location.href = "cos.html"; }}
+        onNav={onNav}
       />
       <Hero
         onReserve={() => scrollTo("rezervari")}
@@ -41,12 +64,7 @@ function App() {
       />
       <MenuSection cart={cart.items} onAdd={cart.add} />
       <Ambient />
-      <BookOrderSection
-        cart={cart.items}
-        onAdd={cart.add}
-        onDec={cart.dec}
-        onClear={cart.clear}
-      />
+      <ReservationSection />
       <Footer />
     </React.Fragment>
   );

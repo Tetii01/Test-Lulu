@@ -18,7 +18,7 @@ function Nav({ theme, toggleTheme, cartCount, onCart, onNav }) {
     { id: "meniu",     ro: "Meniu",      en: "The Menu" },
     { id: "ambient",   ro: "Ambient",    en: "Atmosphere" },
     { id: "rezervari", ro: "Rezervări",  en: "Reservations" },
-    { id: "comanda",   ro: "Comandă",    en: "Order Online" },
+    { id: "cos",       ro: "Coș",        en: "Checkout" },
     { id: "contact",   ro: "Contact",    en: "Find Us" },
   ];
 
@@ -114,27 +114,27 @@ function Hero({ onReserve, onMenu }) {
 }
 
 // ===================== MENU =====================
-function DishCard({ item, cat, inCart, onAdd, idx }) {
+function DishCard({ item, cat, inCart, onAdd }) {
   return (
-    <article className="dish" style={{ animationDelay: `${(idx % 3) * 0.06}s` }}>
+    <article className="dish">
       <div className="dish-img">
         <div className="placeholder">
           {window.DISH_GLYPH[cat] || window.DISH_GLYPH.principal}
         </div>
       </div>
-      <div>
+      <div className="dish-body">
         <div className="dish-head">
           <h3 className="dish-name">{item.name}</h3>
-          <span className="dish-price">{item.price} <small style={{ fontSize: 11, letterSpacing: "0.1em" }}>RON</small></span>
+          <span className="dish-price">{item.price} <small style={{ fontSize: 10, letterSpacing: "0.1em" }}>RON</small></span>
         </div>
-        <div className="dish-sub" style={{ marginTop: 6 }}>
+        <div className="dish-sub">
           {item.en}{item.g ? ` · ${item.g}g` : ""}
         </div>
+        <button className={"dish-add" + (inCart ? " added" : "")} onClick={() => onAdd(item.id)}>
+          {inCart ? <React.Fragment><Icon.Check style={{ width: 11, height: 11 }} /> Adăugat</React.Fragment>
+                  : <React.Fragment><Icon.Plus style={{ width: 11, height: 11 }} /> Adaugă</React.Fragment>}
+        </button>
       </div>
-      <button className={"dish-add" + (inCart ? " added" : "")} onClick={() => onAdd(item.id)}>
-        {inCart ? <React.Fragment><Icon.Check style={{ width: 12, height: 12 }} /> Adăugat</React.Fragment>
-                : <React.Fragment><Icon.Plus style={{ width: 12, height: 12 }} /> Adaugă</React.Fragment>}
-      </button>
     </article>
   );
 }
@@ -178,7 +178,6 @@ function MenuSection({ cart, onAdd }) {
               cat={active}
               inCart={!!cart[item.id]}
               onAdd={onAdd}
-              idx={i}
             />
           ))}
         </div>
@@ -307,102 +306,214 @@ function flatItems() {
   return map;
 }
 
-function OrderPanel({ cart, onAdd, onDec, onClear }) {
-  const lookup = React.useMemo(flatItems, []);
-  const total = Object.entries(cart).reduce((sum, [id, qty]) => sum + (lookup[id]?.price || 0) * qty, 0);
-  const entries = Object.entries(cart);
-
-  const quickIds = window.QUICK_ADD;
-
-  return (
-    <div className="panel" id="comanda-panel">
-      <div className="eyebrow"><span className="dot"></span> 04 · Comandă rapidă</div>
-      <h3>Quick Add.</h3>
-      <p className="sub">Construiește-ți comanda în câteva atingeri. Ridicare la fața locului.</p>
-
-      <div className="chip-rail">
-        {quickIds.map((id) => {
-          const it = lookup[id];
-          if (!it) return null;
-          return (
-            <button key={id} className="chip" onClick={() => onAdd(id)}>
-              <span className="pl">+</span> {it.name}
-              <span className="pr">{it.price} RON</span>
-            </button>
-          );
-        })}
-      </div>
-
-      {entries.length === 0 ? (
-        <div className="cart-empty">
-          <div className="ic">⌁</div>
-          Coșul tău este gol — adaugă din rândul de mai sus sau din meniu.
-        </div>
-      ) : (
-        <div className="cart-list">
-          {entries.map(([id, qty]) => {
-            const it = lookup[id];
-            if (!it) return null;
-            return (
-              <div className="cart-row" key={id}>
-                <div>
-                  <div className="nm">{it.name}</div>
-                  <div className="pr">{it.price} RON · {it.en}</div>
-                </div>
-                <div className="qty">
-                  <button onClick={() => onDec(id)} aria-label="Scade">−</button>
-                  <span className="n">{qty}</span>
-                  <button onClick={() => onAdd(id)} aria-label="Crește">+</button>
-                </div>
-                <div className="total">{it.price * qty} RON</div>
-              </div>
-            );
-          })}
-        </div>
-      )}
-
-      <div className="cart-foot">
-        <div>
-          <div className="lbl">Total</div>
-          <div className="sum">{total} <span style={{ fontSize: 16, letterSpacing: "0.1em", color: "var(--ink-mute)" }}>RON</span></div>
-        </div>
-        <div style={{ display: "flex", gap: 8 }}>
-          {entries.length > 0 && (
-            <button className="btn btn-outline" onClick={onClear} style={{ padding: "12px 18px" }}>
-              Golește
-            </button>
-          )}
-          <button
-            className="btn btn-primary"
-            disabled={entries.length === 0}
-            style={{ opacity: entries.length === 0 ? 0.4 : 1, pointerEvents: entries.length === 0 ? "none" : "auto", padding: "14px 22px" }}>
-            Trimite comanda <Icon.Arrow style={{ width: 14, height: 14 }} />
-          </button>
-        </div>
-      </div>
-    </div>
-  );
-}
-
-function BookOrderSection({ cart, onAdd, onDec, onClear }) {
+function ReservationSection() {
   return (
     <section className="section" id="rezervari">
       <div className="wrap">
         <div className="section-header">
           <div className="reveal">
-            <div className="eyebrow"><span className="dot"></span> Rezervări &amp; Comenzi</div>
+            <div className="eyebrow"><span className="dot"></span> 03 · Rezervări</div>
             <h2 className="section-title">
-              Vino la noi, sau<br /><em>ia gustul cu tine.</em>
+              Asigură-ți<br /><em>o masă cu vedere.</em>
             </h2>
           </div>
           <p className="section-intro reveal" data-delay="1">
-            Pentru rezervări, completează formularul — un weekend însorit se prinde greu fără.
-            Pentru ridicare rapidă, alege din Quick Add și plătești la fața locului.
+            Un weekend însorit pe creastă se prinde greu fără rezervare.
+            Completează formularul — te sunăm pentru confirmare.
           </p>
         </div>
-        <div className="two-col" id="comanda">
-          <div className="reveal"><ReservationForm /></div>
-          <div className="reveal" data-delay="1"><OrderPanel cart={cart} onAdd={onAdd} onDec={onDec} onClear={onClear} /></div>
+        <div className="reveal"><ReservationForm /></div>
+      </div>
+    </section>
+  );
+}
+
+// ===================== CHECKOUT =====================
+function CheckoutSection({ cart, onAdd, onDec, onClear }) {
+  const lookup = React.useMemo(flatItems, []);
+  const entries = Object.entries(cart);
+  const subtotal = entries.reduce((sum, [id, qty]) => sum + (lookup[id]?.price || 0) * qty, 0);
+  const quickIds = window.QUICK_ADD;
+
+  const [mode, setMode] = React.useState("livrare"); // livrare | ridicare
+  const [form, setForm] = React.useState({ name: "", phone: "", address: "", notes: "" });
+  const [placed, setPlaced] = React.useState(false);
+  const set = (k) => (v) => setForm((s) => ({ ...s, [k]: v }));
+
+  const deliveryFee = mode === "livrare" && subtotal > 0 ? 15 : 0;
+  const total = subtotal + deliveryFee;
+
+  const placeOrder = (e) => {
+    e.preventDefault();
+    if (entries.length === 0) return;
+    setPlaced(true);
+    setTimeout(() => {
+      onClear();
+      setPlaced(false);
+      setForm({ name: "", phone: "", address: "", notes: "" });
+    }, 5000);
+  };
+
+  return (
+    <section className="section checkout" id="cos">
+      <div className="wrap">
+
+        {/* CART PANEL */}
+        <div className="panel reveal">
+          <div className="panel-head">
+            <h3>Preparatele tale</h3>
+            <span className="panel-count">{entries.reduce((a, [, q]) => a + q, 0)} {entries.reduce((a, [, q]) => a + q, 0) === 1 ? "articol" : "articole"}</span>
+          </div>
+
+          {entries.length === 0 ? (
+            <React.Fragment>
+              <div className="cart-empty">
+                <div className="ic">⌁</div>
+                Coșul tău este gol.
+                <div style={{ marginTop: 10, fontSize: 12, color: "var(--ink-mute)" }}>
+                  Adaugă rapid din favoritele noastre sau parcurge meniul.
+                </div>
+              </div>
+              <div className="chip-rail" style={{ marginTop: 18, marginBottom: 0 }}>
+                {quickIds.map((id) => {
+                  const it = lookup[id];
+                  if (!it) return null;
+                  return (
+                    <button key={id} className="chip" onClick={() => onAdd(id)}>
+                      <span className="pl">+</span> {it.name}
+                      <span className="pr">{it.price} RON</span>
+                    </button>
+                  );
+                })}
+              </div>
+            </React.Fragment>
+          ) : (
+            <React.Fragment>
+              <div className="cart-list">
+                {entries.map(([id, qty]) => {
+                  const it = lookup[id];
+                  if (!it) return null;
+                  return (
+                    <div className="cart-row" key={id}>
+                      <div className="cart-row-info">
+                        <div className="nm">{it.name}</div>
+                        <div className="pr">{it.price} RON{it.g ? ` · ${it.g}g` : ""}</div>
+                      </div>
+                      <div className="qty">
+                        <button onClick={() => onDec(id)} aria-label="Scade">−</button>
+                        <span className="n">{qty}</span>
+                        <button onClick={() => onAdd(id)} aria-label="Crește">+</button>
+                      </div>
+                      <div className="total">{it.price * qty} <small>RON</small></div>
+                    </div>
+                  );
+                })}
+              </div>
+
+              <div className="chip-rail" style={{ marginTop: 20, marginBottom: 0 }}>
+                <span style={{ fontSize: 10, letterSpacing: "0.2em", textTransform: "uppercase", color: "var(--ink-mute)", alignSelf: "center", marginRight: 4 }}>Adaugă +</span>
+                {quickIds.slice(0, 6).map((id) => {
+                  const it = lookup[id];
+                  if (!it) return null;
+                  return (
+                    <button key={id} className="chip" onClick={() => onAdd(id)}>
+                      {it.name}
+                      <span className="pr">{it.price}</span>
+                    </button>
+                  );
+                })}
+              </div>
+            </React.Fragment>
+          )}
+        </div>
+
+        {/* CHECKOUT FORM */}
+        <div className="panel reveal" data-delay="1" style={{ marginTop: 20 }}>
+          <div className="panel-head"><h3>Detalii livrare</h3></div>
+
+          <div className="mode-toggle">
+            <button
+              type="button"
+              className={"mode-opt" + (mode === "livrare" ? " active" : "")}
+              onClick={() => setMode("livrare")}>
+              <Icon.Truck style={{ width: 16, height: 16 }} />
+              <span>
+                <strong>Livrare</strong>
+                <small>15 RON · ~45 min</small>
+              </span>
+            </button>
+            <button
+              type="button"
+              className={"mode-opt" + (mode === "ridicare" ? " active" : "")}
+              onClick={() => setMode("ridicare")}>
+              <Icon.Bag style={{ width: 16, height: 16 }} />
+              <span>
+                <strong>Ridicare</strong>
+                <small>Gratuit · 20 min</small>
+              </span>
+            </button>
+          </div>
+
+          <form onSubmit={placeOrder}>
+            <div className="form-row">
+              <Field id="c-name" label="Nume complet" value={form.name} onChange={set("name")} autoComplete="name" />
+            </div>
+            <div className="form-row" style={{ marginTop: 16 }}>
+              <Field id="c-phone" label="Telefon" type="tel" value={form.phone} onChange={set("phone")} autoComplete="tel" />
+            </div>
+            {mode === "livrare" && (
+              <div className="form-row" style={{ marginTop: 16 }}>
+                <Field id="c-address" label="Adresă de livrare" value={form.address} onChange={set("address")} autoComplete="street-address" />
+              </div>
+            )}
+            <div className="form-row" style={{ marginTop: 16 }}>
+              <Field id="c-notes" label="Note pentru bucătărie (opțional)" value={form.notes} onChange={set("notes")} required={false} />
+            </div>
+
+            <div className="cart-summary">
+              <div className="sum-row">
+                <span>Subtotal</span>
+                <span className="v">{subtotal} RON</span>
+              </div>
+              {mode === "livrare" && (
+                <div className="sum-row">
+                  <span>Taxă livrare</span>
+                  <span className="v">{deliveryFee} RON</span>
+                </div>
+              )}
+              <div className="sum-row total-row">
+                <span>Total de plată</span>
+                <span className="v big">{total} <small>RON</small></span>
+              </div>
+            </div>
+
+            <div className="checkout-actions">
+              {entries.length > 0 && (
+                <button type="button" className="btn btn-outline" onClick={onClear}>
+                  Golește coșul
+                </button>
+              )}
+              <button
+                type="submit"
+                className="btn btn-primary"
+                disabled={entries.length === 0}
+                style={{ opacity: entries.length === 0 ? 0.35 : 1, pointerEvents: entries.length === 0 ? "none" : "auto", flex: 1 }}>
+                Plasează comanda · {total} RON <Icon.Arrow style={{ width: 14, height: 14 }} />
+              </button>
+            </div>
+
+            {placed && (
+              <div className="confirm" style={{ marginTop: 18 }}>
+                <Icon.Check style={{ width: 18, height: 18 }} />
+                <div>
+                  <strong>Mulțumim, {form.name || "draga noastră"}!</strong>
+                  <div style={{ fontSize: 12, color: "var(--ink-soft)", marginTop: 2 }}>
+                    Comanda ta de {total} RON a fost preluată. Te sunăm pentru confirmare la {form.phone || "numărul tău"}.
+                  </div>
+                </div>
+              </div>
+            )}
+          </form>
         </div>
       </div>
     </section>
@@ -454,4 +565,4 @@ function Footer() {
   );
 }
 
-Object.assign(window, { Nav, Hero, MenuSection, Ambient, BookOrderSection, Footer });
+Object.assign(window, { Nav, Hero, MenuSection, Ambient, ReservationSection, CheckoutSection, Footer });
