@@ -114,9 +114,9 @@ function Hero({ onReserve, onMenu }) {
 }
 
 // ===================== MENU =====================
-function DishCard({ item, cat, inCart, onAdd }) {
+function DishCard({ item, cat, inCart, onAdd, idx }) {
   return (
-    <article className="dish reveal">
+    <article className="dish" style={{ animationDelay: `${(idx % 3) * 0.06}s` }}>
       <div className="dish-img">
         <div className="placeholder">
           {window.DISH_GLYPH[cat] || window.DISH_GLYPH.principal}
@@ -178,6 +178,7 @@ function MenuSection({ cart, onAdd }) {
               cat={active}
               inCart={!!cart[item.id]}
               onAdd={onAdd}
+              idx={i}
             />
           ))}
         </div>
